@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: blast-ai
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn server:app
+    healthCheckPath: /health
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: AI_MODEL
+        sync: false
