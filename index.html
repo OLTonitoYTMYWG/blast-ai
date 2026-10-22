@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="theme-color"
+    content="#090b14"
+  >
+
+  <title>Blast AI</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --background: #090b14;
+      --panel: #111625;
+      --border: #273149;
+      --blue: #59a7ff;
+      --purple: #9875ff;
+      --text: #f4f6ff;
+      --muted: #a3acc4;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(
+          ellipse at top,
+          #18264b 0%,
+          transparent 55%
+        ),
+        var(--background);
+      color: var(--text);
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 22px 16px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      background: #090b14dd;
+    }
+
+    .logo {
+      font-size: 29px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(
+        90deg,
+        var(--blue),
+        var(--purple)
+      );
+      color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 5px;
+    }
+
+    .toolbar {
+      width: min(850px, 100%);
+      margin: 0 auto;
+      padding: 12px 18px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    main {
+      width: min(850px, 100%);
+      flex: 1;
+      margin: 0 auto;
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    #welcome {
+      text-align: center;
+      margin: auto 0;
+      padding: 35px 0;
+    }
+
+    #welcome h1 {
+      font-size: clamp(28px, 6vw, 46px);
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+
+    #welcome p {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 24px;
+    }
+
+    .suggestion {
+      background: #151c2e;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 11px 13px;
+      font-size: 13px;
+    }
+
+    #chat {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .message {
+      max-width: 90%;
+      padding: 14px 17px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      line-height: 1.65;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .user {
+      align-self: flex-end;
+      background: linear-gradient(
+        135deg,
+        #245caa,
+        #6546ae
+      );
+      border-color: transparent;
+    }
+
+    .assistant {
+      align-self: flex-start;
+      background: var(--panel);
+    }
+
+    .label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: #c2c9dc;
+      margin-bottom: 7px;
+    }
+
+    .composer {
+      position: sticky;
+      bottom: 0;
+      padding: 14px 16px;
+      background: #090b14f5;
+      border-top: 1px solid var(--border);
+    }
+
+    form {
+      width: min(850px, 100%);
+      margin: 0 auto;
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 9px;
+    }
+
+    textarea {
+      flex: 1;
+      min-width: 0;
+      resize: vertical;
+      min-height: 45px;
+      max-height: 180px;
+      padding: 12px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font: inherit;
+    }
+
+    textarea::placeholder {
+      color: #858fa9;
+    }
+
+    button {
+      border: none;
+      border-radius: 13px;
+      background: linear-gradient(
+        135deg,
+        var(--blue),
+        var(--purple)
+      );
+      color: white;
+      padding: 12px 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    button:hover {
+      opacity: 0.86;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: wait;
+    }
+
+    .secondary {
+      background: #151c2e;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 9px 12px;
+      font-size: 12px;
+    }
+
+    .notice {
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      margin: 10px 0 0;
+    }
+
+    @media (max-width: 500px) {
+      main {
+        padding: 16px 12px;
+      }
+
+      .message {
+        max-width: 96%;
+      }
+
+      .composer {
+        padding: 10px;
+      }
+
+      .toolbar {
+        padding-inline: 12px;
+      }
+
+      .logo {
+        font-size: 25px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="logo">💥 BLAST AI</div>
+
+    <div class="subtitle">
+      Your ideas. Your universe. Let's build.
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <span class="status" id="status">Ready when you are ✨</span>
+
+    <button class="secondary" id="newChat">
+      + New chat
+    </button>
+  </div>
+
+  <main>
+    <section id="welcome">
+      <h1>What are we creating today?</h1>
+
+      <p>
+        Ask questions, explore ideas, write code,
+        or just have a conversation.
+      </p>
+
+      <div class="suggestions">
+        <button
+          class="suggestion"
+          data-prompt="Tell me a funny joke."
+        >
+          😂 Tell me a joke
+        </button>
+
+        <button
+          class="suggestion"
+          data-prompt="Help me brainstorm a game idea."
+        >
+          🎮 Create a game
+        </button>
+
+        <button
+          class="suggestion"
+          data-prompt="Teach me something interesting."
+        >
+          🧠 Teach me something
+        </button>
+      </div>
+    </section>
+
+    <section
+      id="chat"
+      aria-live="polite"
+      aria-label="Conversation"
+    ></section>
+  </main>
+
+  <footer class="composer">
+    <form id="chatForm">
+      <textarea
+        id="messageInput"
+        placeholder="Message Blast AI..."
+        aria-label="Your message"
+        maxlength="4000"
+        required
+      ></textarea>
+
+      <button id="sendButton" type="submit">
+        Send ↑
+      </button>
+    </form>
+
+    <p class="notice">
+      AI can make mistakes. Check important information.
+    </p>
+  </footer>
+
+  <script>
+    const form = document.getElementById("chatForm");
+    const input = document.getElementById("messageInput");
+    const chat = document.getElementById("chat");
+    const welcome = document.getElementById("welcome");
+    const sendButton = document.getElementById("sendButton");
+    const newChatButton = document.getElementById("newChat");
+    const status = document.getElementById("status");
+
+    let messages = [];
+    let busy = false;
+
+    function addMessage(role, content) {
+      welcome.hidden = true;
+
+      const bubble = document.createElement("article");
+      bubble.className = `message ${role}`;
+
+      const label = document.createElement("div");
+      label.className = "label";
+
+      label.textContent =
+        role === "user" ? "YOU" : "💥 BLAST AI";
+
+      const text = document.createElement("div");
+      text.textContent = content;
+
+      bubble.append(label, text);
+      chat.appendChild(bubble);
+
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth"
+      });
+
+      return text;
+    }
+
+    async function sendMessage(content) {
+      content = content.trim();
+
+      if (!content || busy) return;
+
+      busy = true;
+      sendButton.disabled = true;
+      newChatButton.disabled = true;
+      input.disabled = true;
+
+      messages.push({
+        role: "user",
+        content
+      });
+
+      addMessage("user", content);
+
+      input.value = "";
+      status.textContent = "Blast AI is thinking...";
+
+      const replyElement = addMessage(
+        "assistant",
+        "Thinking... 💭"
+      );
+
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            messages: messages.slice(-20)
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.error || "Something went wrong."
+          );
+        }
+
+        if (typeof data.reply !== "string") {
+          throw new Error("The server returned an invalid response.");
+        }
+
+        replyElement.textContent = data.reply;
+
+        messages.push({
+          role: "assistant",
+          content: data.reply
+        });
+
+        status.textContent = "Ready when you are ✨";
+      } catch (error) {
+        replyElement.textContent =
+          "I couldn't respond this time. " + error.message;
+
+        messages.pop();
+
+        status.textContent = "Something went wrong";
+      } finally {
+        busy = false;
+        sendButton.disabled = false;
+        newChatButton.disabled = false;
+        input.disabled = false;
+        input.focus();
+      }
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      sendMessage(input.value);
+    });
+
+    input.addEventListener("keydown", (event) => {
+      if (
+        event.key === "Enter" &&
+        !event.shiftKey &&
+        !event.isComposing
+      ) {
+        event.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
+    newChatButton.addEventListener("click", () => {
+      if (busy) return;
+
+      messages = [];
+      chat.replaceChildren();
+      welcome.hidden = false;
+      status.textContent = "New conversation ✨";
+      input.focus();
+    });
+
+    document.querySelectorAll("[data-prompt]").forEach((button) => {
+      button.addEventListener("click", () => {
+        sendMessage(button.dataset.prompt);
+      });
+    });
+  </script>
+</body>
+</html>
