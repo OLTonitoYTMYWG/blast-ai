@@ -5,7 +5,7 @@ from google import genai
 from google.genai import types
 
 app = Flask(__name__, static_folder="static")
-app.config["MAX_CONTENT_LENGTH"] = 100 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
 MAX_MESSAGES = 20
 MAX_MESSAGE_LENGTH = 4000
@@ -15,23 +15,13 @@ You are Blast AI, a friendly, creative, helpful AI assistant.
 
 Help users with:
 - General questions and conversation.
-- Coding, debugging, and game development.
-- Writing, brainstorming, and learning.
-- Planning creative projects.
+- Coding and game development.
+- Writing and brainstorming.
+- Learning and creative projects.
 
 Be honest about your abilities and limitations.
-Do not claim to have completed actions you have not done.
 Your name is Blast AI.
 """
-
-
-def get_client():
-    api_key = os.environ.get("GEMINI_API_KEY")
-
-    if not api_key:
-        raise RuntimeError("GEMINI_API_KEY is not configured.")
-
-    return genai.Client(api_key=api_key)
 
 
 @app.get("/")
@@ -59,19 +49,15 @@ def chat():
     if not isinstance(messages, list) or not messages:
         return jsonify({"error": "Please enter a message."}), 400
 
-    if len(messages) > MAX_MESSAGES:
-        return jsonify({
-            "error": "This conversation is too long. Start a new chat."
-        }), 400
-
+    messages = messages[-MAX_MESSAGES:]
     contents = []
 
-    for message in messages:
-        if not isinstance(message, dict):
+    for item in messages:
+        if not isinstance(item, dict):
             return jsonify({"error": "Invalid message format."}), 400
 
-        role = message.get("role")
-        content = message.get("content")
+        role = item.get("role")
+        content = item.get("content")
 
         if role not in ("user", "assistant"):
             return jsonify({"error": "Invalid message role."}), 400
@@ -92,22 +78,28 @@ def chat():
             "error": "The last message must come from the user."
         }), 400
 
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     model = os.environ.get("AI_MODEL", "").strip()
+
+    if not api_key:
+        return jsonify({
+            "error": "GEMINI_API_KEY is not configured."
+        }), 503
 
     if not model:
         return jsonify({
-            "error": "The AI model is not configured in Render."
+            "error": "AI_MODEL is not configured."
         }), 503
 
     try:
-        client = get_client()
+        client = genai.Client(api_key=api_key)
 
         response = client.models.generate_content(
             model=model,
             contents=contents,
             config=types.GenerateContentConfig(
                 system_instruction=BLAST_PERSONALITY,
-                max_output_tokens=4096
+                max_output_tokens=2048
             )
         )
 
@@ -115,16 +107,15 @@ def chat():
 
         if not reply:
             return jsonify({
-                "error": "Gemini returned an empty response. Please try again."
+                "error": "The AI returned an empty response."
             }), 502
 
         return jsonify({"reply": reply})
 
     except Exception as error:
         app.logger.exception("Blast AI request failed.")
-
-        error_code = getattr(error, "code", None)
         error_text = str(error).upper()
+        error_code = getattr(error, "code", None)
 
         if (
             error_code == 503
@@ -132,10 +123,7 @@ def chat():
             or "UNAVAILABLE" in error_text
         ):
             return jsonify({
-                "error": (
-                    "Gemini is temporarily busy. "
-                    "Please wait a little and try again."
-                )
+                "error": "The AI service is temporarily busy. Try again shortly."
             }), 503
 
         if (
@@ -144,29 +132,23 @@ def chat():
             or "RESOURCE_EXHAUSTED" in error_text
         ):
             return jsonify({
-                "error": (
-                    "Gemini's request limit has been reached. "
-                    "Please wait before trying again."
-                )
+                "error": "The AI request limit was reached. Please wait and retry."
             }), 429
 
         if error_code in (401, 403) or "INVALID API KEY" in error_text:
             return jsonify({
-                "error": "Please check the Gemini API key in Render."
+                "error": "The API key was rejected. Check your Render settings."
             }), 502
 
         return jsonify({
-            "error": (
-                "Blast AI couldn't get a response from Gemini. "
-                "Please try again later."
-            )
+            "error": "Blast AI could not get a response. Please try again."
         }), 502
 
 
 @app.errorhandler(413)
-def request_too_large(error):
+def too_large(_error):
     return jsonify({
-        "error": "The request is too large."
+        "error": "The request is too large. The limit is 10 MB."
     }), 413
 
 
