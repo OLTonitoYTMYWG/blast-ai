@@ -3,11 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <meta
-    name="theme-color"
-    content="#090b14"
-  >
+  <meta name="theme-color" content="#090b14">
 
   <title>Blast AI</title>
 
@@ -278,9 +274,11 @@
   </header>
 
   <div class="toolbar">
-    <span class="status" id="status">Ready when you are ✨</span>
+    <span class="status" id="status">
+      Ready when you are ✨
+    </span>
 
-    <button class="secondary" id="newChat">
+    <button class="secondary" id="newChat" type="button">
       + New chat
     </button>
   </div>
@@ -297,6 +295,7 @@
       <div class="suggestions">
         <button
           class="suggestion"
+          type="button"
           data-prompt="Tell me a funny joke."
         >
           😂 Tell me a joke
@@ -304,6 +303,7 @@
 
         <button
           class="suggestion"
+          type="button"
           data-prompt="Help me brainstorm a game idea."
         >
           🎮 Create a game
@@ -311,6 +311,7 @@
 
         <button
           class="suggestion"
+          type="button"
           data-prompt="Teach me something interesting."
         >
           🧠 Teach me something
@@ -365,7 +366,6 @@
 
       const label = document.createElement("div");
       label.className = "label";
-
       label.textContent =
         role === "user" ? "YOU" : "💥 BLAST AI";
 
@@ -399,7 +399,6 @@
       });
 
       addMessage("user", content);
-
       input.value = "";
       status.textContent = "Blast AI is thinking...";
 
@@ -412,23 +411,56 @@
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Accept": "application/json"
           },
           body: JSON.stringify({
             messages: messages.slice(-20)
           })
         });
 
-        const data = await response.json();
+        // Read the response as text first.
+        // This prevents HTML error pages from causing
+        // the confusing "Unexpected token '<'" error.
+        const responseText = await response.text();
+
+        let data;
+
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          const contentType =
+            response.headers.get("content-type") || "";
+
+          const isHTML =
+            contentType.includes("text/html") ||
+            responseText.trimStart().startsWith("<");
+
+          if (isHTML) {
+            throw new Error(
+              "The server returned an HTML page instead " +
+              "of JSON. HTTP status: " + response.status +
+              ". Check the backend route or deployment."
+            );
+          }
+
+          throw new Error(
+            "The server returned invalid JSON. " +
+            "HTTP status: " + response.status + "."
+          );
+        }
 
         if (!response.ok) {
           throw new Error(
-            data.error || "Something went wrong."
+            data.error ||
+            "Request failed. HTTP status: " + response.status
           );
         }
 
         if (typeof data.reply !== "string") {
-          throw new Error("The server returned an invalid response.");
+          throw new Error(
+            "The server response did not contain a valid reply."
+          );
         }
 
         replyElement.textContent = data.reply;
@@ -439,13 +471,23 @@
         });
 
         status.textContent = "Ready when you are ✨";
-      } catch (error) {
-        replyElement.textContent =
-          "I couldn't respond this time. " + error.message;
 
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : String(error);
+
+        replyElement.textContent =
+          "I couldn't respond this time. " + errorMessage;
+
+        // Remove the failed user message from history.
         messages.pop();
 
         status.textContent = "Something went wrong";
+
+        console.error("Blast AI request failed:", error);
+
       } finally {
         busy = false;
         sendButton.disabled = false;
