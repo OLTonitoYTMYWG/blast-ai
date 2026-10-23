@@ -1,481 +1,543 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#090b14">
-
-  <title>Blast AI</title>
-
-  <style>
-    :root {
-      color-scheme: dark;
-      --background: #090b14;
-      --panel: #111625;
-      --border: #273149;
-      --blue: #59a7ff;
-      --purple: #9875ff;
-      --text: #f4f6ff;
-      --muted: #a3acc4;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background:
-        radial-gradient(
-          ellipse at top,
-          #18264b 0%,
-          transparent 55%
-        ),
-        var(--background);
-      color: var(--text);
-      font-family: system-ui, sans-serif;
-      display: flex;
-      flex-direction: column;
-    }
-
-    header {
-      padding: 22px 16px;
-      text-align: center;
-      border-bottom: 1px solid var(--border);
-      background: #090b14dd;
-    }
-
-    .logo {
-      font-size: 29px;
-      font-weight: 900;
-      letter-spacing: 2px;
-      background: linear-gradient(
-        90deg,
-        var(--blue),
-        var(--purple)
-      );
-      color: transparent;
-      background-clip: text;
-    }
-
-    .subtitle {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 5px;
-    }
-
-    .toolbar {
-      width: min(850px, 100%);
-      margin: 0 auto;
-      padding: 12px 18px 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .status {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    main {
-      width: min(850px, 100%);
-      flex: 1;
-      margin: 0 auto;
-      padding: 24px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    #welcome {
-      text-align: center;
-      margin: auto 0;
-      padding: 35px 0;
-    }
-
-    #welcome h1 {
-      font-size: clamp(28px, 6vw, 46px);
-      line-height: 1.15;
-      margin-bottom: 12px;
-    }
-
-    #welcome p {
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    .suggestions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 24px;
-    }
-
-    .suggestion {
-      background: #151c2e;
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 14px;
-      padding: 11px 13px;
-      font-size: 13px;
-    }
-
-    #chat {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    .message {
-      max-width: 90%;
-      padding: 14px 17px;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      line-height: 1.65;
-      overflow-wrap: anywhere;
-      white-space: pre-wrap;
-    }
-
-    .user {
-      align-self: flex-end;
-      background: linear-gradient(
-        135deg,
-        #245caa,
-        #6546ae
-      );
-      border-color: transparent;
-    }
-
-    .assistant {
-      align-self: flex-start;
-      background: var(--panel);
-    }
-
-    .label {
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 1px;
-      color: #c2c9dc;
-      margin-bottom: 7px;
-    }
-
-    .composer {
-      position: sticky;
-      bottom: 0;
-      padding: 14px 16px;
-      background: #090b14f5;
-      border-top: 1px solid var(--border);
-    }
-
-    form {
-      width: min(850px, 100%);
-      margin: 0 auto;
-      display: flex;
-      align-items: flex-end;
-      gap: 10px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 9px;
-    }
-
-    textarea {
-      flex: 1;
-      min-width: 0;
-      resize: vertical;
-      min-height: 45px;
-      max-height: 180px;
-      padding: 12px;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--text);
-      font: inherit;
-    }
-
-    textarea::placeholder {
-      color: #858fa9;
-    }
-
-    button {
-      border: none;
-      border-radius: 13px;
-      background: linear-gradient(
-        135deg,
-        var(--blue),
-        var(--purple)
-      );
-      color: white;
-      padding: 12px 16px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-
-    button:hover {
-      opacity: 0.86;
-    }
-
-    button:disabled {
-      opacity: 0.5;
-      cursor: wait;
-    }
-
-    .secondary {
-      background: #151c2e;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 9px 12px;
-      font-size: 12px;
-    }
-
-    .notice {
-      text-align: center;
-      color: var(--muted);
-      font-size: 11px;
-      margin: 10px 0 0;
-    }
-
-    @media (max-width: 500px) {
-      main {
-        padding: 16px 12px;
-      }
-
-      .message {
-        max-width: 96%;
-      }
-
-      .composer {
-        padding: 10px;
-      }
-
-      .toolbar {
-        padding-inline: 12px;
-      }
-
-      .logo {
-        font-size: 25px;
-      }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090b14">
+<title>Blast AI</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #090b14;
+  --panel: #111625;
+  --border: #273149;
+  --text: #f4f6ff;
+  --muted: #a3acc4;
+  --a: #59a7ff;
+  --b: #9875ff;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at top,#18264b 0,transparent 55%),var(--bg);
+  color: var(--text);
+  font-family: system-ui,-apple-system,sans-serif;
+  min-height: 100vh;
+}
+body[data-theme="forest"] {
+  --bg:#07130f;--panel:#10231b;--border:#294b3b;
+  --a:#55dfa4;--b:#7ca7ff;
+}
+body[data-theme="sunset"] {
+  --bg:#1b0b16;--panel:#281323;--border:#583048;
+  --a:#ff9a69;--b:#e878c7;
+}
+body[data-theme="light"] {
+  color-scheme:light;--bg:#f1f4fc;--panel:#fff;
+  --border:#d7deed;--text:#172033;--muted:#5c6880;
+  --a:#236fd1;--b:#7750cc;
+}
+header {
+  padding:18px 14px;text-align:center;
+  border-bottom:1px solid var(--border);
+}
+.logo {
+  font-size:27px;font-weight:950;letter-spacing:2px;
+  background:linear-gradient(90deg,var(--a),var(--b));
+  color:transparent;background-clip:text;
+}
+.sub { font-size:12px;color:var(--muted);margin-top:4px; }
+.layout {
+  max-width:1050px;margin:auto;padding:14px;
+  display:grid;grid-template-columns:210px minmax(0,1fr);gap:14px;
+}
+aside,.panel,form#chatForm {
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:16px;
+}
+aside { padding:12px;height:fit-content;position:sticky;top:10px; }
+button,select,.file-label {
+  font:inherit;border:1px solid var(--border);border-radius:11px;
+  padding:9px 11px;background:var(--panel);color:var(--text);cursor:pointer;
+}
+button.primary {
+  background:linear-gradient(135deg,var(--a),var(--b));
+  color:white;border:0;font-weight:800;
+}
+button:disabled { opacity:.5;cursor:wait; }
+.nav { display:grid;gap:7px; }
+.nav button { text-align:left; }
+.nav button.active { border-color:var(--a);box-shadow:0 0 0 1px var(--a) inset; }
+.small { font-size:12px;color:var(--muted); }
+label.field { display:grid;gap:6px;margin:12px 0 5px;font-size:12px;color:var(--muted); }
+select { width:100%; }
+main { min-width:0; }
+.panel { padding:16px;margin-bottom:12px; }
+.panel h2 { margin:0 0 8px;font-size:19px; }
+.panel p { color:var(--muted);line-height:1.5; }
+#chatPanel { display:flex;flex-direction:column;min-height:68vh; }
+.chatlog { display:flex;flex-direction:column;gap:12px;flex:1;padding:6px 0 16px; }
+.bubble {
+  max-width:94%;padding:12px 14px;border:1px solid var(--border);
+  border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;
+}
+.bubble.user {
+  align-self:flex-end;
+  background:linear-gradient(135deg,var(--panel),var(--bg));
+}
+.bubble.assistant { align-self:flex-start;background:var(--bg); }
+.who { font-size:10px;letter-spacing:1px;font-weight:900;color:var(--muted);margin-bottom:5px; }
+form#chatForm { display:flex;gap:8px;padding:8px; }
+textarea,input[type=text] {
+  font:inherit;color:var(--text);background:transparent;border:0;
+  outline:0;min-width:0;width:100%;resize:vertical;
+}
+textarea { min-height:42px;max-height:160px;padding:10px; }
+.actions { display:flex;flex-wrap:wrap;gap:7px;margin-top:9px;align-items:center; }
+.file-label { display:inline-block;font-size:13px; }
+.file-label input { display:none; }
+.output {
+  margin-top:12px;border:1px dashed var(--border);
+  border-radius:13px;padding:10px;min-height:55px;overflow:hidden;
+}
+.output img,.output video { max-width:100%;border-radius:9px; }
+.output canvas { max-width:100%;height:auto;border-radius:9px; }
+.output audio { width:100%; }
+.fieldrow { display:flex;flex-wrap:wrap;gap:8px;align-items:center; }
+.fieldrow input[type=text] {
+  border:1px solid var(--border);border-radius:10px;padding:10px;flex:1 1 200px;
+}
+.hidden { display:none!important; }
+footer { text-align:center;color:var(--muted);font-size:11px;padding:12px; }
+@media(max-width:700px) {
+  .layout { grid-template-columns:1fr;padding:9px; }
+  .nav { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .nav button { text-align:center;padding:8px 5px;font-size:12px; }
+  aside { position:static; }
+  #chatPanel { min-height:65vh; }
+  .bubble { max-width:100%; }
+}
+</style>
 </head>
+<body data-theme="midnight">
 
-<body>
-  <header>
-    <div class="logo">💥 BLAST AI</div>
+<header>
+  <div class="logo">💥 BLAST AI</div>
+  <div class="sub">Your ideas. Your universe. Let's build.</div>
+</header>
 
-    <div class="subtitle">
-      Your ideas. Your universe. Let's build.
-    </div>
-  </header>
-
-  <div class="toolbar">
-    <span class="status" id="status">
-      Ready when you are ✨
-    </span>
-
-    <button class="secondary" id="newChat" type="button">
-      + New chat
-    </button>
+<div class="layout">
+<aside>
+  <div class="nav" aria-label="Features">
+    <button class="active" data-view="chatPanel">💬 Chat</button>
+    <button data-view="imagePanel">🖼️ Image</button>
+    <button data-view="musicPanel">🎵 Music</button>
+    <button data-view="videoPanel">🎬 Video</button>
+    <button data-view="filesPanel">📎 Files</button>
   </div>
 
-  <main>
-    <section id="welcome">
-      <h1>What are we creating today?</h1>
+  <label class="field" for="themeSelect">🎨 Chat theme</label>
+  <select id="themeSelect">
+    <option value="midnight">Midnight</option>
+    <option value="forest">Forest</option>
+    <option value="sunset">Sunset</option>
+    <option value="light">Light</option>
+  </select>
 
-      <p>
-        Ask questions, explore ideas, write code,
-        or just have a conversation.
-      </p>
+  <div class="actions">
+    <button id="clearChat" type="button">Clear memory</button>
+  </div>
+  <p class="small">Chats and theme are saved in this browser on this device.</p>
+</aside>
 
-      <div class="suggestions">
-        <button
-          class="suggestion"
-          type="button"
-          data-prompt="Tell me a funny joke."
-        >
-          😂 Tell me a joke
-        </button>
+<main>
+<section class="panel" id="chatPanel">
+  <h2>Chat with Blast AI</h2>
+  <p class="small">Chat responses use the model configured on your server.</p>
+  <div id="chatLog" class="chatlog" aria-live="polite"></div>
 
-        <button
-          class="suggestion"
-          type="button"
-          data-prompt="Help me brainstorm a game idea."
-        >
-          🎮 Create a game
-        </button>
+  <form id="chatForm">
+    <textarea id="message" maxlength="4000" placeholder="Message Blast AI..." aria-label="Message Blast AI" required></textarea>
+    <button id="send" class="primary" type="submit">Send ↑</button>
+  </form>
 
-        <button
-          class="suggestion"
-          type="button"
-          data-prompt="Teach me something interesting."
-        >
-          🧠 Teach me something
-        </button>
-      </div>
-    </section>
+  <div class="actions">
+    <label class="file-label">📎 Upload text file
+      <input id="chatFile" type="file" accept=".txt,.md,.csv,.json,.html,.css,.js,.py,.log,.xml,.yaml,.yml">
+    </label>
+    <span id="chatFileStatus" class="small">Text files can be attached to your next message.</span>
+  </div>
+</section>
 
-    <section
-      id="chat"
-      aria-live="polite"
-      aria-label="Conversation"
-    ></section>
-  </main>
+<section class="panel hidden" id="imagePanel">
+  <h2>🖼️ Custom image maker</h2>
+  <p>This starter generator creates an original SVG scene in your browser. It doesn't call an image API or generate photorealistic AI images.</p>
+  <div class="fieldrow">
+    <input id="imagePrompt" type="text" placeholder="e.g. purple sunset over a neon city">
+    <button id="makeImage" class="primary">Generate image</button>
+  </div>
+  <div id="imageOutput" class="output">Your generated image will appear here.</div>
+</section>
 
-  <footer class="composer">
-    <form id="chatForm">
-      <textarea
-        id="messageInput"
-        placeholder="Message Blast AI..."
-        aria-label="Your message"
-        maxlength="4000"
-        required
-      ></textarea>
+<section class="panel hidden" id="musicPanel">
+  <h2>🎵 Custom music maker</h2>
+  <p>Creates a short synthesized tune in your browser. No music API or account required.</p>
+  <div class="fieldrow">
+    <input id="musicPrompt" type="text" placeholder="e.g. calm space adventure">
+    <button id="makeMusic" class="primary">Create music</button>
+  </div>
+  <div class="actions">
+    <label class="field" style="margin:0">Length
+      <select id="musicLength">
+        <option value="8">8 seconds</option>
+        <option value="15">15 seconds</option>
+        <option value="25">25 seconds</option>
+      </select>
+    </label>
+    <button id="playMusic">▶ Play tune</button>
+    <button id="stopMusic">■ Stop</button>
+  </div>
+  <div id="musicOutput" class="output">Generate a tune to play it and download a WAV file.</div>
+</section>
 
-      <button id="sendButton" type="submit">
-        Send ↑
-      </button>
-    </form>
+<section class="panel hidden" id="videoPanel">
+  <h2>🎬 Custom video maker</h2>
+  <p>Creates a simple animated scene from your prompt and records it as a WebM video if your browser supports recording.</p>
+  <div class="fieldrow">
+    <input id="videoPrompt" type="text" placeholder="e.g. stars floating over a blue ocean">
+    <button id="makeVideo" class="primary">Create video</button>
+  </div>
+  <div class="actions">
+    <label class="field" style="margin:0">Length
+      <select id="videoLength">
+        <option value="5">5 seconds</option>
+        <option value="8">8 seconds</option>
+        <option value="12">12 seconds</option>
+      </select>
+    </label>
+  </div>
+  <div id="videoOutput" class="output">Your animated video will appear here.</div>
+</section>
 
-    <p class="notice">
-      AI can make mistakes. Check important information.
-    </p>
-  </footer>
+<section class="panel hidden" id="filesPanel">
+  <h2>📎 File uploads</h2>
+  <p>Choose a text file to preview it locally. Text files can also be attached to your next chat message.</p>
+  <div class="fieldrow">
+    <input id="filePicker" type="file" accept=".txt,.md,.csv,.json,.html,.css,.js,.py,.log,.xml,.yaml,.yml,image/*,application/pdf">
+    <button id="readFile" class="primary">Load file</button>
+  </div>
+  <div id="fileOutput" class="output">No file selected.</div>
+</section>
+</main>
+</div>
 
-  <script>
-    const form = document.getElementById("chatForm");
-    const input = document.getElementById("messageInput");
-    const chat = document.getElementById("chat");
-    const welcome = document.getElementById("welcome");
-    const sendButton = document.getElementById("sendButton");
-    const newChatButton = document.getElementById("newChat");
-    const status = document.getElementById("status");
+<footer>Blast AI • Local browser features • Keep API keys private</footer>
 
-    let messages = [];
-    let busy = false;
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const KEYS = {messages:"blastai.messages.v1",theme:"blastai.theme.v1"};
+  let messages = [];
+  let busy = false;
+  let attachedText = "";
 
-    function addMessage(role, content) {
-      welcome.hidden = true;
+  function saveMessages() {
+    try { localStorage.setItem(KEYS.messages,JSON.stringify(messages.slice(-80))); }
+    catch(e) {}
+  }
 
-      const bubble = document.createElement("article");
-      bubble.className = `message ${role}`;
+  function addBubble(role,content) {
+    const bubble=document.createElement("div");
+    bubble.className="bubble "+role;
+    const who=document.createElement("div");
+    who.className="who";
+    who.textContent=role==="user"?"YOU":"💥 BLAST AI";
+    const body=document.createElement("div");
+    body.textContent=content;
+    bubble.append(who,body);
+    $("chatLog").appendChild(bubble);
+    bubble.scrollIntoView({behavior:"smooth",block:"end"});
+    return body;
+  }
 
-      const label = document.createElement("div");
-      label.className = "label";
-      label.textContent =
-        role === "user" ? "YOU" : "💥 BLAST AI";
+  function renderMessages() {
+    $("chatLog").replaceChildren();
+    messages.forEach(m=>addBubble(m.role,m.content));
+  }
 
-      const text = document.createElement("div");
-      text.textContent = content;
+  try {
+    const saved=JSON.parse(localStorage.getItem(KEYS.messages)||"[]");
+    if(Array.isArray(saved)) {
+      messages=saved.filter(m=>m&&["user","assistant"].includes(m.role)&&typeof m.content==="string").slice(-80);
+    }
+  } catch(e) { messages=[]; }
 
-      bubble.append(label, text);
-      chat.appendChild(bubble);
+  renderMessages();
 
-      window.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: "smooth"
+  const savedTheme=localStorage.getItem(KEYS.theme)||"midnight";
+  $("themeSelect").value=["midnight","forest","sunset","light"].includes(savedTheme)?savedTheme:"midnight";
+  document.body.dataset.theme=$("themeSelect").value;
+
+  $("themeSelect").addEventListener("change",()=>{
+    document.body.dataset.theme=$("themeSelect").value;
+    try { localStorage.setItem(KEYS.theme,$("themeSelect").value); } catch(e) {}
+  });
+
+  document.querySelectorAll("[data-view]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      document.querySelectorAll("main>.panel").forEach(p=>p.classList.add("hidden"));
+      $(btn.dataset.view).classList.remove("hidden");
+      document.querySelectorAll("[data-view]").forEach(b=>b.classList.toggle("active",b===btn));
+    });
+  });
+
+  $("clearChat").addEventListener("click",()=>{
+    if(!confirm("Delete saved chat history from this browser?")) return;
+    messages=[];
+    saveMessages();
+    renderMessages();
+  });
+
+  async function askBlast() {
+    if(busy) return;
+    let text=$("message").value.trim();
+    if(!text&&!attachedText) return;
+
+    if(attachedText) {
+      text=(text?text+"\n\n":"Please help me understand this uploaded text file.\n\n")
+        +"[Uploaded file text]\n"+attachedText;
+    }
+    if(!text) return;
+
+    busy=true;
+    $("send").disabled=true;
+    $("message").disabled=true;
+
+    messages.push({role:"user",content:text});
+    addBubble("user",text);
+    saveMessages();
+    $("message").value="";
+    attachedText="";
+    $("chatFileStatus").textContent="No text file attached.";
+
+    const replyEl=addBubble("assistant","Thinking…");
+
+    try {
+      const response=await fetch("/api/chat",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body:JSON.stringify({messages:messages.slice(-20)})
       });
 
-      return text;
+      const raw=await response.text();
+      let data;
+
+      try { data=JSON.parse(raw); }
+      catch(e) {
+        throw new Error(`Server returned an unexpected response (HTTP ${response.status}).`);
+      }
+
+      if(!response.ok) throw new Error(data.error||`Request failed (HTTP ${response.status}).`);
+      if(typeof data.reply!=="string") throw new Error("The server response did not contain a reply.");
+
+      replyEl.textContent=data.reply;
+      messages.push({role:"assistant",content:data.reply});
+      saveMessages();
+    } catch(e) {
+      replyEl.textContent="I couldn't respond this time. "+(e?.message||"Please try again.");
+    } finally {
+      busy=false;
+      $("send").disabled=false;
+      $("message").disabled=false;
+      $("message").focus();
+    }
+  }
+
+  $("chatForm").addEventListener("submit",e=>{
+    e.preventDefault();
+    askBlast();
+  });
+
+  $("message").addEventListener("keydown",e=>{
+    if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing) {
+      e.preventDefault();
+      $("chatForm").requestSubmit();
+    }
+  });
+
+  async function handleFile(file,outputEl,forChat=false) {
+    if(!file) {
+      outputEl.textContent="Choose a file first.";
+      return;
+    }
+    if(file.size>5*1024*1024) {
+      outputEl.textContent="That file is larger than 5 MB. Choose a smaller file.";
+      return;
     }
 
-    async function sendMessage(content) {
-      content = content.trim();
+    outputEl.replaceChildren();
+    const title=document.createElement("p");
+    title.textContent=`${file.name} • ${Math.round(file.size/1024)} KB • ${file.type||"unknown type"}`;
+    outputEl.append(title);
 
-      if (!content || busy) return;
+    if(file.type.startsWith("image/")) {
+      const img=document.createElement("img");
+      img.alt=file.name;
+      img.src=URL.createObjectURL(file);
+      outputEl.append(img,document.createTextNode(" Image preview only; this demo does not send image pixels to the AI."));
+    } else if(file.type==="application/pdf"||file.name.toLowerCase().endsWith(".pdf")) {
+      outputEl.append(document.createTextNode(" PDF selected. This starter version doesn't extract PDF text."));
+    } else {
+      const text=await file.text();
+      const pre=document.createElement("pre");
+      pre.style.whiteSpace="pre-wrap";
+      pre.style.overflowWrap="anywhere";
+      pre.textContent=text.slice(0,30000);
+      outputEl.append(pre);
 
-      busy = true;
-      sendButton.disabled = true;
-      newChatButton.disabled = true;
-      input.disabled = true;
+      if(forChat) {
+        attachedText=`Filename: ${file.name}\n${text.slice(0,12000)}`;
+        $("chatFileStatus").textContent=`Attached ${file.name} to your next message.`;
+      }
+    }
+  }
 
-      messages.push({
-        role: "user",
-        content
-      });
+  $("chatFile").addEventListener("change",e=>{
+    if(e.target.files[0]) handleFile(e.target.files[0],$("fileOutput"),true);
+  });
 
-      addMessage("user", content);
-      input.value = "";
-      status.textContent = "Blast AI is thinking...";
+  $("filePicker").addEventListener("change",e=>{
+    if(e.target.files[0]) $("fileOutput").textContent="Ready to load: "+e.target.files[0].name;
+  });
 
-      const replyElement = addMessage(
-        "assistant",
-        "Thinking... 💭"
-      );
+  $("readFile").addEventListener("click",()=>{
+    handleFile($("filePicker").files[0],$("fileOutput"),false);
+  });
 
-      try {
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-          },
-          body: JSON.stringify({
-            messages: messages.slice(-20)
-          })
-        });
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g,c=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&apos;"
+    }[c]));
+  }
 
-        // Read the response as text first.
-        // This prevents HTML error pages from causing
-        // the confusing "Unexpected token '<'" error.
-        const responseText = await response.text();
+  function hash(s) {
+    let h=2166136261;
+    for(let i=0;i<s.length;i++) {
+      h^=s.charCodeAt(i);
+      h=Math.imul(h,16777619);
+    }
+    return h>>>0;
+  }
 
-        let data;
+  function rng(seed) {
+    let a=seed||1;
+    return ()=>{
+      a|=0;
+      a=a+0x6D2B79F5|0;
+      let t=Math.imul(a^a>>>15,1|a);
+      t=t+Math.imul(t^t>>>7,61|t)^t;
+      return ((t^t>>>14)>>>0)/4294967296;
+    };
+  }
 
-        try {
-          data = JSON.parse(responseText);
-        } catch (parseError) {
-          const contentType =
-            response.headers.get("content-type") || "";
+  // Procedural image generator
+  function makeSvg(prompt) {
+    const r=rng(hash(prompt));
+    const low=prompt.toLowerCase();
+    const palettes=[
+      ["#10143a","#7a3cff","#ff86c8"],
+      ["#052e2b","#20c997","#b7f7dc"],
+      ["#211044","#ff7c6b","#ffd166"],
+      ["#10243f","#43b4ff","#e9f5ff"]
+    ];
+    const p=palettes[hash(prompt)%palettes.length];
 
-          const isHTML =
-            contentType.includes("text/html") ||
-            responseText.trimStart().startsWith("<");
+    const stars=Array.from({length:75},()=>(
+      `<circle cx="${Math.round(r()*900)}" cy="${Math.round(r()*430)}" r="${(r()*2+.4).toFixed(1)}" fill="#fff" opacity="${(r()*.8+.2).toFixed(2)}"/>`
+    )).join("");
 
-          if (isHTML) {
-            throw new Error(
-              "The server returned an HTML page instead " +
-              "of JSON. HTTP status: " + response.status +
-              ". Check the backend route or deployment."
-            );
+    let scene="";
+
+    if(low.includes("city")||low.includes("building")||low.includes("cyberpunk")) {
+      let buildings="";
+      for(let x=0;x<900;x+=50) {
+        const h=50+r()*170;
+        buildings+=`<rect x="${x}" y="${430-h}" width="${32+r()*16}" height="${h}" rx="2" fill="${p[0]}" stroke="${p[1]}" stroke-width="2"/>`;
+        for(let y=445-h;y<420;y+=18) {
+          for(let xx=x+8;xx<x+38;xx+=13) {
+            buildings+=`<rect x="${xx}" y="${y}" width="5" height="7" fill="${p[2]}" opacity="${r()*.9}"/>`;
           }
-
-          throw new Error(
-            "The server returned invalid JSON. " +
-            "HTTP status: " + response.status + "."
-          );
         }
+      }
+      scene=`<path d="M0 420 Q450 300 900 420 V600 H0Z" fill="${p[0]}"/>${buildings}`;
+    } else if(low.includes("ocean")||low.includes("sea")||low.includes("water")) {
+      scene=`<circle cx="690" cy="190" r="80" fill="${p[2]}" opacity=".9"/>
+      <path d="M0 340 Q100 300 200 340 T400 340 T600 340 T800 340 V600 H0Z" fill="${p[1]}" opacity=".8"/>
+      <path d="M0 410 Q100 370 200 410 T400 410 T600 410 T800 410 V600 H0Z" fill="${p[0]}"/>`;
+    } else if(low.includes("forest")||low.includes("tree")) {
+      let trees="";
+      for(let x=-20;x<960;x+=65) {
+        const h=120+r()*180;
+        trees+=`<path d="M${x} 490 L${x+28} ${490-h} L${x+58} 490Z" fill="${r()>.5?p[1]:p[0]}"/>`;
+      }
+      scene=`<circle cx="690" cy="150" r="65" fill="${p[2]}"/>${trees}
+      <path d="M0 480 Q400 430 900 480 V600 H0Z" fill="${p[0]}"/>`;
+    } else {
+      scene=`<circle cx="${220+r()*460}" cy="${140+r()*130}" r="${55+r()*60}" fill="${p[2]}" opacity=".9"/>
+      <path d="M0 430 L160 240 L300 400 L470 200 L650 410 L790 260 L900 400 V600 H0Z" fill="${p[1]}" opacity=".85"/>
+      <path d="M0 500 L180 340 L340 470 L540 310 L740 500 L860 370 L900 420 V600 H0Z" fill="${p[0]}"/>`;
+    }
 
-        if (!response.ok) {
-          throw new Error(
-            data.error ||
-            "Request failed. HTTP status: " + response.status
-          );
-        }
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+      <defs><linearGradient id="g" x2="0" y2="1"><stop stop-color="${p[0]}"/><stop offset="1" stop-color="${p[1]}"/></linearGradient></defs>
+      <rect width="900" height="600" fill="url(#g)"/>${stars}${scene}
+      <rect x="22" y="22" width="856" height="556" rx="18" fill="none" stroke="#fff" stroke-opacity=".45"/>
+      <text x="40" y="550" font-family="sans-serif" font-size="22" fill="#fff">${esc(prompt.slice(0,65)||"Blast AI artwork")}</text>
+    </svg>`;
+  }
 
-        if (typeof data.reply !== "string") {
-          throw new Error(
-            "The server response did not contain a valid reply."
-          );
-        }
+  $("makeImage").addEventListener("click",()=>{
+    const prompt=$("imagePrompt").value.trim();
+    if(!prompt) { $("imageOutput").textContent="Enter a description first.";return; }
+    const svg=makeSvg(prompt);
+    const url=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml"}));
+    const out=$("imageOutput");
+    out.replaceChildren();
+    const img=document.createElement("img");
+    img.alt=prompt;img.src=url;
+    out.append(img);
+    const dl=document.createElement("a");
+    dl.href=url;dl.download="blast-ai-image.svg";dl.textContent="Download SVG";
+    dl.style.display="inline-block";dl.style.marginTop="10px";dl.style.color="var(--a)";
+    out.append(document.createElement("br"),dl);
+  });
 
-        replyElement.textContent = data.reply;
+  // Browser-based music synthesizer
+  function makeWav(prompt,seconds) {
+    const sr=22050,n=sr*seconds;
+    const buf=new ArrayBuffer(44+n*2),v=new DataView(buf);
+    const write=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};
+    write(0,"RIFF");v.setUint32(4,36+n*2,true);write(8,"WAVE");
+    write(12,"fmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);
+    v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);
+    v.setUint16(32,2,true);v.setUint16(34,16,true);write(36,"data");
+    v.setUint32(40,n*2,true);
 
-        messages.push({
-          role: "assistant",
-          content: data.reply
-        });
+    const rnd=rng(hash(prompt));
+    const scale=[0,2,4,7,9,12,14,16,19];
+    const base=prompt.toLowerCase().includes("dark")?110:220;
+    const step=.25;
+    const notes=Array.from({length:Math.ceil(seconds/step)},()=>scale[Math.floor(rnd()*scale.length)]);
 
-        status.textContent = "Ready when you are ✨";
-
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
+    for(let i=0;i<n;i++) {
+      const t=i/sr;
+      const beat=Math.floor(t/step);
+      const note=notes[beat]||0;
+      const freq=base*Math.pow(2,note/12);
+      const phase=2*Math.PI*freq*t;
+      const envelope=Math.min(1,(t%step)*18)*Math.max(0,Math.min(1,(seconds-t)*5));
+      let sample=(Math.sin(phase)*.65+Math.sin(phase*.5)*.2)*envelope*.25;
+      sample*=.8+.message
             : String(error);
 
         replyElement.textContent =
